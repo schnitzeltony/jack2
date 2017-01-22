@@ -232,6 +232,19 @@ static inline int16x4_t float_16_neon(float32x4_t s)
 /* Linear Congruential noise generator. From the music-dsp list
  * less random than rand(), but good enough and 10x faster 
  */
+#ifdef __ARM_NEON__
+static unsigned int __attribute__((aligned(16))) seedarr[4] =
+	{ 22222, 1193700558, 3854336718, 1539479758 };
+
+static inline uint32x4_t very_fast_rand() {
+	uint32x4_t vseed = vld1q_u32(seedarr);
+	/* vmla(a,b,c) <-> a+b*c */
+	vseed = vmlaq_n_u32(vdupq_n_u32(1907633515), vseed, 96314165);
+	vst1q_u32(seedarr, vseed);
+	return vseed;
+}
+#endif
+
 static unsigned int seed = 22222;
 
 static inline unsigned int fast_rand() {
